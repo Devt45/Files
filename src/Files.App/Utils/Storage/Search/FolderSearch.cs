@@ -657,8 +657,8 @@ namespace Files.App.Utils.Storage
 		}
 
 		// Everything search syntax is passed through unchanged; plain searches keep the same
-		// wildcard behavior as the native search. Multi-word searches without wildcards are
-		// quoted so they continue to match as a phrase.
+		// wildcard behavior as the native search. Multi-word searches without user wildcards
+		// are quoted so they continue to match as a phrase.
 		private string BuildEverythingSearch()
 		{
 			if (string.IsNullOrEmpty(Query))
@@ -667,9 +667,9 @@ namespace Files.App.Utils.Storage
 			if (IsAQSQuery)
 				return Query!;
 
-			return !QueryWithWildcard.Contains(' ') || QueryWithWildcard.Contains('*') || QueryWithWildcard.Contains('?')
-				? QueryWithWildcard
-				: $"\"{Query}\"";
+			return Query!.Contains(' ') && !Query.Contains('*') && !Query.Contains('?')
+				? $"\"{Query}\""
+				: QueryWithWildcard;
 		}
 
 		private static async Task<bool> IsFullyIndexedAsync(BaseStorageFolder folder)
