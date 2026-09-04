@@ -52,6 +52,44 @@ namespace Files.App.Utils.Storage
 
 		private bool IsAQSQuery => Query is not null && (Query.StartsWith('$') || Query.Contains(':', StringComparison.Ordinal));
 
+		// Everything modifiers verified to return instantly through the bundled SDK IPC.
+		// Everything 1.5 resolves other colon terms (Windows AQS vocabulary, its own property
+		// queries such as artist:/length:/dc:/attrib:) through the shell property system, which
+		// can stall the IPC indefinitely, so those searches are handled by the native search.
+		private static readonly string[] EverythingSearchModifiers =
+		[
+			"case:", "child:", "count:", "depth:", "diacritics:", "dm:", "duplicate:", "dupe:",
+			"ext:", "file:", "filelistfilename:", "folder:", "nopath:", "nosubfolders:",
+			"offset:", "parent:", "path:", "recent:", "regex:", "run:", "runcount:",
+			"size:", "top:", "wholefile:", "wholefilename:", "wholepath:", "wfn:", "wregex:",
+		];
+
+		private static readonly Regex EverythingModifierPattern = new(@"^[\w.-]+:", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+		private bool ShouldSearchWithEverything
+		{
+			get
+			{
+				if (Query is null || Query.StartsWith('$'))
+					return false;
+
+				if (!Query.Contains(':'))
+					return true;
+
+				foreach (var term in Query.Split(' '))
+				{
+					var termToCheck = term.TrimStart('!', '-');
+					if (EverythingModifierPattern.Match(termToCheck) is { Success: true } match &&
+						!EverythingSearchModifiers.Contains(match.Value, StringComparer.OrdinalIgnoreCase))
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+		}
+
 		private string QueryWithWildcard
 		{
 			get
@@ -494,6 +532,11 @@ namespace Files.App.Utils.Storage
 			{
 				await SearchTagsAsync(folder, results, token);
 			}
+			else if (ShouldSearchWithEverything && IsEverythingSearchScope(folder) &&
+				await SearchWithEverythingAsync(folder, results, token))
+			{
+				return;
+			}
 			else
 			{
 				var workingFolder = await GetStorageFolderAsync(folder);
@@ -523,6 +566,110 @@ namespace Files.App.Utils.Storage
 
 				await SearchWithWin32Async(folder, hiddenOnlyFromWin32, results, token);
 			}
+		}
+
+		// Everything indexes local NTFS volumes; other locations keep the native search.
+		private bool IsEverythingSearchScope(string folder)
+		{
+			if (string.IsNullOrWhiteSpace(folder) || !Path.IsPathRooted(folder) || folder.StartsWith('\\'))
+				return false;
+
+			if (StorageTrashBinService.IsUnderTrashBin(folder))
+				return false;
+
+			try
+			{
+				var drive = new SystemIO.DriveInfo(Path.GetPathRoot(folder)!);
+				if (drive.DriveType != SystemIO.DriveType.Fixed ||
+					!string.Equals(drive.DriveFormat, "NTFS", StringComparison.OrdinalIgnoreCase))
+				{
+					return false;
+				}
+			}
+			catch
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private async Task<bool> SearchWithEverythingAsync(string folder, IList<ListedItem> results, CancellationToken token)
+		{
+			if (token.IsCancellationRequested)
+				return false;
+
+			string search = BuildEverythingSearch();
+
+			if (!string.IsNullOrEmpty(folder))
+			{
+				string folderPath = folder.EndsWith('\\') ? folder : folder + "\\";
+				search = $"\"{folderPath}\" {search}";
+			}
+
+			var matchPaths = await Task.Run(() => EverythingApi.Search(search, UsedMaxItemCount), token);
+			if (matchPaths is null)
+				return false; // Everything is unavailable; the native search is used instead.
+
+			await Task.Run(() =>
+			{
+				WIN32_FIND_DATAW findData = default;
+				foreach (var path in matchPaths)
+				{
+					if (token.IsCancellationRequested || results.Count >= UsedMaxItemCount)
+						break;
+
+					// Files in the recycle bin remain in the Everything index but must not be listed.
+					if (StorageTrashBinService.IsUnderTrashBin(path))
+						continue;
+
+					unsafe
+					{
+						var hFile = PInvoke.FindFirstFileEx(path, FINDEX_INFO_LEVELS.FindExInfoBasic,
+							&findData, FINDEX_SEARCH_OPS.FindExSearchNameMatch, FIND_FIRST_EX_FLAGS.FIND_FIRST_EX_LARGE_FETCH);
+						if (hFile.IsInvalid)
+							continue;
+
+						using (hFile)
+						{
+							string fileName = findData.cFileName.ToString();
+							var isSystem = ((FileAttributes)findData.dwFileAttributes & FileAttributes.System) == FileAttributes.System;
+							var isHidden = ((FileAttributes)findData.dwFileAttributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+							var startWithDot = fileName.StartsWith('.');
+
+							bool shouldBeListed = (!isHidden ||
+								(UserSettingsService.FoldersSettingsService.ShowHiddenItems &&
+								(!isSystem || UserSettingsService.FoldersSettingsService.ShowProtectedSystemFiles))) &&
+								(!startWithDot || UserSettingsService.FoldersSettingsService.ShowDotFiles);
+
+							if (shouldBeListed)
+							{
+								var item = GetListedItemAsync(path, findData);
+								if (item is not null)
+									AddResult(results, item, token);
+							}
+						}
+					}
+				}
+			}, token);
+
+			return true;
+		}
+
+		// Everything search syntax is passed through unchanged; plain searches keep the same
+		// wildcard behavior as the native search. Multi-word searches without wildcards are
+		// quoted so they continue to match as a phrase.
+		private string BuildEverythingSearch()
+		{
+			if (string.IsNullOrEmpty(Query))
+				return "*";
+
+			if (IsAQSQuery)
+				return Query!;
+
+			return !QueryWithWildcard.Contains(' ') || QueryWithWildcard.Contains('*') || QueryWithWildcard.Contains('?')
+				? QueryWithWildcard
+				: $"\"{Query}\"";
 		}
 
 		private static async Task<bool> IsFullyIndexedAsync(BaseStorageFolder folder)
