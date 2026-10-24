@@ -218,6 +218,14 @@
 				</wctcontrols:SettingsCard.HeaderIcon>
 				<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=SettingsNaturalLanguageSearch}" IsOn="{x:Bind ViewModel.EnableNaturalLanguageSearch, Mode=TwoWay}" />
 			</wctcontrols:SettingsCard>
+
+			<!--  Everything search scope  -->
+			<wctcontrols:SettingsCard Description="{helpers:ResourceString Name=SearchEntireComputerWithEverythingDescription}" Header="{helpers:ResourceString Name=SearchEntireComputerWithEverything}">
+				<wctcontrols:SettingsCard.HeaderIcon>
+					<FontIcon Glyph="&#xE721;" />
+				</wctcontrols:SettingsCard.HeaderIcon>
+				<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=SearchEntireComputerWithEverything}" IsOn="{x:Bind ViewModel.SearchEntireComputerWithEverything, Mode=TwoWay}" />
+			</wctcontrols:SettingsCard>
 		</StackPanel>
 	</Grid>
 </Page>

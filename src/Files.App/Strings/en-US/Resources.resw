@@ -3530,6 +3530,18 @@
   <data name="FilesRunningAsAdminContent" xml:space="preserve">
     <value>Due to a limitation with Windows and WinAppSdk, drag and drop isn't available when running Files as admin. If you wish to use drag and drop, you can work around this limitation by opening UAC (User Account Control) from the Start Menu and selecting the third level, and restarting Windows. Otherwise, you can keep using Files without drag &amp; drop.</value>
   </data>
+  <data name="SearchEntireComputerWithEverything" xml:space="preserve">
+    <value>Search the entire computer with Everything</value>
+  </data>
+  <data name="SearchEntireComputerWithEverythingDescription" xml:space="preserve">
+    <value>When off, Everything searches only the current folder and its subfolders. Can also be toggled with the &quot;Search the entire computer&quot; action.</value>
+  </data>
+  <data name="SearchEntireComputer" xml:space="preserve">
+    <value>Search the entire computer</value>
+  </data>
+  <data name="ToggleSearchEntireComputerDescription" xml:space="preserve">
+    <value>Toggle whether Everything searches the entire computer or only the current folder</value>
+  </data>
   <data name="SettingsNaturalLanguageSearch" xml:space="preserve">
     <value>Use natural language search</value>
   </data>

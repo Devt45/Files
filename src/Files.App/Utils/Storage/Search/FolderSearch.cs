@@ -64,6 +64,8 @@ namespace Files.App.Utils.Storage
 			"size:", "top:", "wholefile:", "wholefilename:", "wholepath:", "wfn:", "wregex:",
 		];
 
+		private const uint EntireComputerMaxResults = 5000;
+
 		private static readonly Regex EverythingModifierPattern = new(@"^[\w.-]+:", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
 		private bool ShouldSearchWithEverything
@@ -130,7 +132,11 @@ namespace Files.App.Utils.Storage
 		{
 			try
 			{
-				if (App.LibraryManager.TryGetLibrary(Folder, out var library))
+				if (await TrySearchEntireComputerAsync(results, token))
+				{
+					// Everything answered for the whole computer.
+				}
+				else if (App.LibraryManager.TryGetLibrary(Folder, out var library))
 				{
 					await AddItemsForLibraryAsync(library, results, token);
 				}
@@ -189,7 +195,11 @@ namespace Files.App.Utils.Storage
 			try
 			{
 				var token = CancellationToken.None;
-				if (App.LibraryManager.TryGetLibrary(Folder, out var library))
+				if (await TrySearchEntireComputerAsync(results, token))
+				{
+					// Everything answered for the whole computer.
+				}
+				else if (App.LibraryManager.TryGetLibrary(Folder, out var library))
 				{
 					await AddItemsForLibraryAsync(library, results, token);
 				}
@@ -594,7 +604,20 @@ namespace Files.App.Utils.Storage
 			return true;
 		}
 
-		private async Task<bool> SearchWithEverythingAsync(string folder, IList<ListedItem> results, CancellationToken token)
+		// When enabled in settings, a single Everything query covers every indexed volume
+		// instead of only the current folder. Falls back to the scoped search otherwise.
+		private Task<bool> TrySearchEntireComputerAsync(IList<ListedItem> results, CancellationToken token)
+		{
+			if (!UserSettingsService.GeneralSettingsService.SearchEntireComputerWithEverything ||
+				string.IsNullOrWhiteSpace(Query) || IsTagQuery(AQSQuery) || !ShouldSearchWithEverything)
+			{
+				return Task.FromResult(false);
+			}
+
+			return SearchWithEverythingAsync(null, results, token);
+		}
+
+		private async Task<bool> SearchWithEverythingAsync(string? folder, IList<ListedItem> results, CancellationToken token)
 		{
 			if (token.IsCancellationRequested)
 				return false;
@@ -607,7 +630,10 @@ namespace Files.App.Utils.Storage
 				search = $"\"{folderPath}\" {search}";
 			}
 
-			var matchPaths = await Task.Run(() => EverythingApi.Search(search, UsedMaxItemCount), token);
+			// A computer-wide query can match millions of items; keep the result set manageable.
+			uint maxResults = folder is null ? Math.Min(UsedMaxItemCount, EntireComputerMaxResults) : UsedMaxItemCount;
+
+			var matchPaths = await Task.Run(() => EverythingApi.Search(search, maxResults), token);
 			if (matchPaths is null)
 				return false; // Everything is unavailable; the native search is used instead.
 
@@ -667,9 +693,10 @@ namespace Files.App.Utils.Storage
 			if (IsAQSQuery)
 				return Query!;
 
-			return Query!.Contains(' ') && !Query.Contains('*') && !Query.Contains('?')
+			// Everything matches plain terms anywhere in the name, like the native search does.
+			return Query!.Contains(' ') && !Query.Contains('*') && !Query.Contains('?') && !Query.Contains('"')
 				? $"\"{Query}\""
-				: QueryWithWildcard;
+				: Query;
 		}
 
 		private static async Task<bool> IsFullyIndexedAsync(BaseStorageFolder folder)

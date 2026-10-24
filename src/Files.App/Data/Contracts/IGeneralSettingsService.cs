@@ -291,6 +291,11 @@ namespace Files.App.Data.Contracts
 		bool EnableNaturalLanguageSearch { get; set; }
 
 		/// <summary>
+		/// Gets or sets a value indicating whether Everything searches cover the entire computer instead of only the current folder.
+		/// </summary>
+		bool SearchEntireComputerWithEverything { get; set; }
+
+		/// <summary>
 		/// Gets or sets a value indicating whether or not to show Files in the system tray.
 		/// </summary>
 		bool ShowSystemTrayIcon { get; set; }

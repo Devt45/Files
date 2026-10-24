@@ -353,6 +353,12 @@ namespace Files.App.Services.Settings
 			set => Set(value);
 		}
 
+		public bool SearchEntireComputerWithEverything
+		{
+			get => Get(false);
+			set => Set(value);
+		}
+
 		public bool ShowSystemTrayIcon
 		{
 			get => Get(BackgroundSettings.ShowSystemTrayIconDefault, BackgroundSettings.ShowSystemTrayIconKey);

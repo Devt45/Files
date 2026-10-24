@@ -305,6 +305,20 @@ namespace Files.App.ViewModels.Settings
 			}
 		}
 
+		public bool SearchEntireComputerWithEverything
+		{
+			get => UserSettingsService.GeneralSettingsService.SearchEntireComputerWithEverything;
+			set
+			{
+				if (value != UserSettingsService.GeneralSettingsService.SearchEntireComputerWithEverything)
+				{
+					UserSettingsService.GeneralSettingsService.SearchEntireComputerWithEverything = value;
+
+					OnPropertyChanged();
+				}
+			}
+		}
+
 		private async Task DetectNaturalLanguageSearchSupportAsync()
 		{
 			IsNaturalLanguageSearchSupported = await Task.Run(NaturalLanguageSearch.IsAvailable);
