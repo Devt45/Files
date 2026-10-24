@@ -25,7 +25,8 @@ namespace Files.App.Actions
 		public bool IsExecutable =>
 			context.ShellPage is not null &&
 			context.HasSelection &&
-			context.SelectedItem is IShortcutItem;
+			(context.SelectedItem is IShortcutItem ||
+			(context.ShellPage.InstanceViewModel.IsPageTypeSearchResults && context.SelectedItems.Count == 1));
 
 		public OpenFileLocationAction()
 		{
@@ -39,13 +40,16 @@ namespace Files.App.Actions
 			if (context.ShellPage?.ShellViewModel is not { } shellViewModel)
 				return;
 
-			var item = context.SelectedItem as IShortcutItem;
+			// Shortcuts open their target's folder; search results open the folder containing the item.
+			var targetPath = context.SelectedItem is IShortcutItem shortcut
+				? shortcut.TargetPath
+				: context.SelectedItem?.ItemPath;
 
-			if (string.IsNullOrWhiteSpace(item?.TargetPath))
+			if (string.IsNullOrWhiteSpace(targetPath))
 				return;
 
 			// Check if destination path exists
-			var folderPath = Path.GetDirectoryName(item.TargetPath);
+			var folderPath = Path.GetDirectoryName(targetPath);
 			FilesystemResult<StorageFolderWithPath> destFolder = folderPath is null
 				? new(null, FileSystemStatusCode.Generic)
 				: await shellViewModel.GetFolderWithPathFromPathAsync(folderPath);
@@ -58,7 +62,7 @@ namespace Files.App.Actions
 				shellPage.NavigateWithArguments(shellPage.InstanceViewModel.FolderSettings.GetLayoutType(folderPath), new NavigationArguments()
 				{
 					NavPathParam = folderPath,
-					SelectItems = (string[])[Path.GetFileName(item.TargetPath.TrimPath())!],
+					SelectItems = (string[])[Path.GetFileName(targetPath.TrimPath())!],
 					AssociatedTabInstance = shellPage
 				});
 			}

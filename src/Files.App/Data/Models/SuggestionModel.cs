@@ -23,6 +23,11 @@ namespace Files.App.Data.Models
 
 		public string? ItemPath { get; set; }
 
+		/// <summary>
+		/// When set, this suggestion completes the search text with an Everything filter instead of opening an item.
+		/// </summary>
+		public string? FilterCompletion { get; set; }
+
 		public string Name { get; set; }
 
 		public string? Description { get; set; }
@@ -31,7 +36,7 @@ namespace Files.App.Data.Models
 
 		public string DisplayName => IsSearchQuery ? string.Format(Strings.SearchForQuery.GetLocalizedResource(), Name) : Name;
 
-		public string PlaceholderGlyph => IsSearchQuery ? "\uE721" : IsRecentSearch ? "\uE81C" : "\uE7C3";
+		public string PlaceholderGlyph => FilterCompletion is not null ? "\uE71C" : IsSearchQuery ? "\uE721" : IsRecentSearch ? "\uE81C" : "\uE7C3";
 
 		public SettingsSearchResult? SettingsResult { get; set; }
 
@@ -107,7 +112,7 @@ namespace Files.App.Data.Models
 
 		public string GetTextMemberPath(string textMemberPath)
 		{
-			return Name;
+			return FilterCompletion ?? Name;
 		}
 	}
 }

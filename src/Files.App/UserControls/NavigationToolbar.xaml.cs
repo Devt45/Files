@@ -258,6 +258,13 @@ namespace Files.App.UserControls
 					return;
 				}
 
+				if (args.Item is SuggestionModel { FilterCompletion: { } completion })
+				{
+					viewModel.OmnibarSearchModeText = completion;
+					Omnibar.FocusWithCaretAtEnd();
+					return;
+				}
+
 				if (args.Item is SuggestionModel item && !string.IsNullOrWhiteSpace(item.ItemPath) && shellPage is not null)
 					await NavigationHelpers.OpenPath(item.ItemPath, shellPage);
 				else
@@ -527,6 +534,15 @@ namespace Files.App.UserControls
 				Omnibar.IsFocused = false;
 				var paneHolder = ContentPageContext.ShellPage?.PaneHolder;
 				paneHolder?.FocusActivePane();
+			}
+			else if (e.Key is VirtualKey.Tab && Omnibar.IsFocused &&
+				Omnibar.CurrentSelectedMode == OmnibarSearchMode &&
+				!InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) &&
+				ViewModel?.TryCompleteSearchFilter() is true)
+			{
+				// Tab completes the Everything filter being typed (e.g. "ex" -> "ext:")
+				e.Handled = true;
+				Omnibar.FocusWithCaretAtEnd();
 			}
 			else if (e.Key is VirtualKey.Tab && Omnibar.IsFocused && !InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
 			{

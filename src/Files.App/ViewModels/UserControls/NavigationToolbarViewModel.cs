@@ -1253,6 +1253,7 @@ namespace Files.App.ViewModels.UserControls
 			var token = _suggestSearchCTS.Token;
 
 			UpdateSearchQuerySuggestion();
+			UpdateFilterSuggestions();
 
 			List<SuggestionModel> newSuggestions = [];
 
@@ -1292,7 +1293,7 @@ namespace Files.App.ViewModels.UserControls
 
 			// Remove outdated suggestions
 			var toRemove = OmnibarSearchModeSuggestionItems
-				.Where(existing => !existing.IsSearchQuery && !newSuggestions.Any(newItem => newItem.ItemPath == existing.ItemPath))
+				.Where(existing => !existing.IsSearchQuery && existing.FilterCompletion is null && !newSuggestions.Any(newItem => newItem.ItemPath == existing.ItemPath))
 				.ToList();
 
 			foreach (var item in toRemove)
@@ -1304,6 +1305,34 @@ namespace Files.App.ViewModels.UserControls
 
 			foreach (var item in toAdd)
 				OmnibarSearchModeSuggestionItems.Add(item);
+		}
+
+		// Everything filters (ext:, size:…) matching the word being typed, listed right after the query item.
+		private void UpdateFilterSuggestions()
+		{
+			foreach (var stale in OmnibarSearchModeSuggestionItems.Where(x => x.FilterCompletion is not null).ToList())
+				OmnibarSearchModeSuggestionItems.Remove(stale);
+
+			var insertIndex = OmnibarSearchModeSuggestionItems.FirstOrDefault() is { IsSearchQuery: true } ? 1 : 0;
+			foreach (var (completedText, filter, description) in EverythingFilterSuggestions.GetCompletions(OmnibarSearchModeText))
+			{
+				OmnibarSearchModeSuggestionItems.Insert(insertIndex++, new SuggestionModel(filter, false)
+				{
+					FilterCompletion = completedText,
+					Description = description,
+				});
+			}
+		}
+
+		public bool TryCompleteSearchFilter()
+		{
+			var completion = EverythingFilterSuggestions.GetCompletions(OmnibarSearchModeText).FirstOrDefault();
+			if (completion.CompletedText is null)
+				return false;
+
+			OmnibarSearchModeText = completion.CompletedText;
+			UpdateFilterSuggestions();
+			return true;
 		}
 
 		private void UpdateSearchQuerySuggestion()

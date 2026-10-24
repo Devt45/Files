@@ -4746,6 +4746,36 @@
   <data name="SearchEntireComputerWithEverythingDescription" xml:space="preserve">
     <value>Désactivé : Everything cherche uniquement dans le dossier actuel et ses sous-dossiers. Peut aussi être basculé avec l'action « Rechercher sur tout le PC ».</value>
   </data>
+  <data name="EverythingFilterExt" xml:space="preserve">
+    <value>Extension, ex : ext:mkv ou ext:mkv;mp4</value>
+  </data>
+  <data name="EverythingFilterSize" xml:space="preserve">
+    <value>Taille, ex : size:&gt;1gb</value>
+  </data>
+  <data name="EverythingFilterDm" xml:space="preserve">
+    <value>Date de modification, ex : dm:today ou dm:thisweek</value>
+  </data>
+  <data name="EverythingFilterDupe" xml:space="preserve">
+    <value>Noms de fichiers en double</value>
+  </data>
+  <data name="EverythingFilterFile" xml:space="preserve">
+    <value>Fichiers uniquement</value>
+  </data>
+  <data name="EverythingFilterFolder" xml:space="preserve">
+    <value>Dossiers uniquement</value>
+  </data>
+  <data name="EverythingFilterParent" xml:space="preserve">
+    <value>Directement dans un dossier, ex : parent:C:\Vidéos</value>
+  </data>
+  <data name="EverythingFilterPath" xml:space="preserve">
+    <value>Chercher dans le chemin complet</value>
+  </data>
+  <data name="EverythingFilterNoSubfolders" xml:space="preserve">
+    <value>Exclure les sous-dossiers</value>
+  </data>
+  <data name="EverythingFilterRegex" xml:space="preserve">
+    <value>Expression régulière</value>
+  </data>
   <data name="SearchScopeEntireComputer" xml:space="preserve">
     <value>tout le PC</value>
   </data>

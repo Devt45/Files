@@ -3536,6 +3536,36 @@
   <data name="SearchEntireComputerWithEverythingDescription" xml:space="preserve">
     <value>When off, Everything searches only the current folder and its subfolders. Can also be toggled with the &quot;Search the entire computer&quot; action.</value>
   </data>
+  <data name="EverythingFilterExt" xml:space="preserve">
+    <value>Extension, e.g. ext:mkv or ext:mkv;mp4</value>
+  </data>
+  <data name="EverythingFilterSize" xml:space="preserve">
+    <value>Size, e.g. size:&gt;1gb</value>
+  </data>
+  <data name="EverythingFilterDm" xml:space="preserve">
+    <value>Date modified, e.g. dm:today or dm:thisweek</value>
+  </data>
+  <data name="EverythingFilterDupe" xml:space="preserve">
+    <value>Duplicate file names</value>
+  </data>
+  <data name="EverythingFilterFile" xml:space="preserve">
+    <value>Files only</value>
+  </data>
+  <data name="EverythingFilterFolder" xml:space="preserve">
+    <value>Folders only</value>
+  </data>
+  <data name="EverythingFilterParent" xml:space="preserve">
+    <value>Only directly in a folder, e.g. parent:C:\Videos</value>
+  </data>
+  <data name="EverythingFilterPath" xml:space="preserve">
+    <value>Match against the full path</value>
+  </data>
+  <data name="EverythingFilterNoSubfolders" xml:space="preserve">
+    <value>Exclude subfolders</value>
+  </data>
+  <data name="EverythingFilterRegex" xml:space="preserve">
+    <value>Regular expression</value>
+  </data>
   <data name="SearchScopeEntireComputer" xml:space="preserve">
     <value>the entire computer</value>
   </data>
