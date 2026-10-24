@@ -7,6 +7,7 @@ namespace Files.App.Actions
 	internal sealed partial class ToggleSearchEntireComputerAction : ObservableObject, IToggleAction
 	{
 		private readonly IGeneralSettingsService GeneralSettingsService;
+		private readonly IContentPageContext ContentPageContext = Ioc.Default.GetRequiredService<IContentPageContext>();
 
 		public string Label
 			=> Strings.SearchEntireComputer.GetLocalizedResource();
@@ -33,6 +34,14 @@ namespace Files.App.Actions
 		public Task ExecuteAsync(object? parameter = null)
 		{
 			GeneralSettingsService.SearchEntireComputerWithEverything = !GeneralSettingsService.SearchEntireComputerWithEverything;
+
+			// Re-run the displayed search so results and the path label match the new scope.
+			if (ContentPageContext.ShellPage is { } shellPage &&
+				shellPage.InstanceViewModel.IsPageTypeSearchResults &&
+				shellPage.InstanceViewModel.CurrentSearchQuery is { Length: > 0 } query)
+			{
+				shellPage.SubmitSearch(query);
+			}
 
 			return Task.CompletedTask;
 		}

@@ -603,7 +603,9 @@ namespace Files.App.Views.Layouts
 
 				if (!args.IsLayoutSwitch)
 				{
-					var displayName = App.LibraryManager.TryGetLibrary(searchPath, out var lib) ? lib.Text : searchPath;
+					var displayName = UserSettingsService.GeneralSettingsService.SearchEntireComputerWithEverything
+						? Strings.SearchScopeEntireComputer.GetLocalizedResource()
+						: App.LibraryManager.TryGetLibrary(searchPath, out var lib) ? lib.Text : searchPath;
 					await parentShellPage.UpdatePathUIToWorkingDirectoryAsync(null, string.Format(Strings.SearchPagePathBoxOverrideText.GetLocalizedResource(), args.SearchQuery, displayName));
 					var searchInstance = new Utils.Storage.FolderSearch
 					{

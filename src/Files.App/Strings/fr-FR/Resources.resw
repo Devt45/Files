@@ -4746,6 +4746,9 @@
   <data name="SearchEntireComputerWithEverythingDescription" xml:space="preserve">
     <value>Désactivé : Everything cherche uniquement dans le dossier actuel et ses sous-dossiers. Peut aussi être basculé avec l'action « Rechercher sur tout le PC ».</value>
   </data>
+  <data name="SearchScopeEntireComputer" xml:space="preserve">
+    <value>tout le PC</value>
+  </data>
   <data name="SearchEntireComputer" xml:space="preserve">
     <value>Rechercher sur tout le PC</value>
   </data>

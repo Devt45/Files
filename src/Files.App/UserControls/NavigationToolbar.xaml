@@ -416,6 +416,20 @@
 			Orientation="Horizontal"
 			Spacing="4">
 
+			<!--  Everything search scope  -->
+			<ToggleButton
+				x:Name="SearchScopeToggleButton"
+				Width="36"
+				Height="32"
+				Padding="0"
+				AutomationProperties.Name="{x:Bind Commands.ToggleSearchEntireComputer.Label, Mode=OneWay}"
+				Background="Transparent"
+				BorderBrush="Transparent"
+				IsChecked="{x:Bind Commands.ToggleSearchEntireComputer.IsOn, Mode=TwoWay}"
+				ToolTipService.ToolTip="{x:Bind Commands.ToggleSearchEntireComputer.LabelWithHotKey, Mode=OneWay}">
+				<FontIcon FontSize="16" Glyph="&#xE774;" />
+			</ToggleButton>
+
 			<!--  Shelf Pane  -->
 			<ToggleButton
 				x:Name="ShelfPaneToggleButton"

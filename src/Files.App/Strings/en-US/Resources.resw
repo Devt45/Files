@@ -3536,6 +3536,9 @@
   <data name="SearchEntireComputerWithEverythingDescription" xml:space="preserve">
     <value>When off, Everything searches only the current folder and its subfolders. Can also be toggled with the &quot;Search the entire computer&quot; action.</value>
   </data>
+  <data name="SearchScopeEntireComputer" xml:space="preserve">
+    <value>the entire computer</value>
+  </data>
   <data name="SearchEntireComputer" xml:space="preserve">
     <value>Search the entire computer</value>
   </data>
