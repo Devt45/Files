@@ -116,6 +116,16 @@ jobs:
           -p:PublishReadyToRun=true `
           -v:quiet
 
+    - name: Set a unique package version
+      shell: pwsh
+      run: |
+        # 4.3.1.0 -> 4.3.<run number>.0 so each build installs over the previous one
+        $manifest = "$env:WORKING_DIR\src\Files.App\Package.appxmanifest"
+        $content = Get-Content $manifest -Raw
+        $content = [regex]::Replace($content, '(<Identity[^>]*Version=")(\d+)\.(\d+)\.\d+\.\d+(")', "`${1}`${2}.`${3}.${{ github.run_number }}.0`${4}")
+        Set-Content $manifest $content -NoNewline
+        Select-String -Path $manifest -Pattern 'Version="'
+
     - name: Create self signed cert as a pfx file
       run: ./.github/scripts/Generate-SelfCertPfx.ps1 -Destination "$env:APPX_SELFSIGNED_CERT_PATH"
 
