@@ -362,7 +362,47 @@
 				UpdateTextOnSelect="False">
 				<controls:OmnibarMode.ItemTemplate>
 					<DataTemplate x:DataType="datamodels:SuggestionModel">
-						<Grid ColumnSpacing="8" Tag="{x:Bind ItemPath}">
+						<Grid
+							Background="Transparent"
+							ColumnSpacing="8"
+							Tag="{x:Bind ItemPath}">
+							<Grid.ContextFlyout>
+								<MenuFlyout Opening="SearchSuggestionMenu_Opening">
+									<MenuFlyoutItem
+										Click="SearchSuggestionOpen_Click"
+										Tag="{x:Bind ItemPath}"
+										Text="{helpers:ResourceString Name=Open}">
+										<MenuFlyoutItem.Icon>
+											<FontIcon Glyph="&#xE8E5;" />
+										</MenuFlyoutItem.Icon>
+									</MenuFlyoutItem>
+									<MenuFlyoutItem
+										Click="SearchSuggestionOpenLocation_Click"
+										Tag="{x:Bind ItemPath}"
+										Text="{helpers:ResourceString Name=OpenFileLocation}">
+										<MenuFlyoutItem.Icon>
+											<FontIcon Glyph="&#xE8DA;" />
+										</MenuFlyoutItem.Icon>
+									</MenuFlyoutItem>
+									<MenuFlyoutItem
+										Click="SearchSuggestionOpenInNewTab_Click"
+										Tag="{x:Bind ItemPath}"
+										Text="{helpers:ResourceString Name=OpenInNewTab}">
+										<MenuFlyoutItem.Icon>
+											<FontIcon Glyph="&#xE8A7;" />
+										</MenuFlyoutItem.Icon>
+									</MenuFlyoutItem>
+									<MenuFlyoutSeparator />
+									<MenuFlyoutItem
+										Click="SearchSuggestionCopyPath_Click"
+										Tag="{x:Bind ItemPath}"
+										Text="{helpers:ResourceString Name=CopyPath}">
+										<MenuFlyoutItem.Icon>
+											<FontIcon Glyph="&#xE8C8;" />
+										</MenuFlyoutItem.Icon>
+									</MenuFlyoutItem>
+								</MenuFlyout>
+							</Grid.ContextFlyout>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />

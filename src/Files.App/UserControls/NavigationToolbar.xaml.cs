@@ -559,6 +559,84 @@ namespace Files.App.UserControls
 			}
 		}
 
+		// Context menu on search suggestions: only for real items (files/folders)
+		[DynamicWindowsRuntimeCast(typeof(MenuFlyout))]
+		[DynamicWindowsRuntimeCast(typeof(MenuFlyoutItem))]
+		private void SearchSuggestionMenu_Opening(object? sender, object e)
+		{
+			if (sender is MenuFlyout flyout &&
+				flyout.Items.OfType<MenuFlyoutItem>().FirstOrDefault()?.Tag is not string { Length: > 0 })
+			{
+				flyout.Hide();
+			}
+		}
+
+		private static string? GetSuggestionPath(object sender)
+			=> (sender as FrameworkElement)?.Tag as string is { Length: > 0 } path ? path : null;
+
+		private void CloseSearchSuggestions()
+		{
+			if (ViewModel is { } viewModel)
+				viewModel.OmnibarSearchModeText = string.Empty;
+
+			Omnibar.IsFocused = false;
+			ContentPageContext.ShellPage?.PaneHolder?.FocusActivePane();
+		}
+
+		private async void SearchSuggestionOpen_Click(object sender, RoutedEventArgs e)
+		{
+			if (GetSuggestionPath(sender) is not { } path || ContentPageContext.ShellPage is not { } shellPage)
+				return;
+
+			CloseSearchSuggestions();
+			await NavigationHelpers.OpenPath(path, shellPage);
+		}
+
+		private void SearchSuggestionOpenLocation_Click(object sender, RoutedEventArgs e)
+		{
+			if (GetSuggestionPath(sender) is not { } path || ContentPageContext.ShellPage is not { } shellPage)
+				return;
+
+			var folderPath = SystemIO.Path.GetDirectoryName(path.TrimEnd('\\'));
+			if (string.IsNullOrEmpty(folderPath))
+				return;
+
+			CloseSearchSuggestions();
+			shellPage.NavigateWithArguments(shellPage.InstanceViewModel.FolderSettings.GetLayoutType(folderPath), new NavigationArguments()
+			{
+				NavPathParam = folderPath,
+				SelectItems = [SystemIO.Path.GetFileName(path.TrimEnd('\\'))],
+				AssociatedTabInstance = shellPage,
+			});
+		}
+
+		private async void SearchSuggestionOpenInNewTab_Click(object sender, RoutedEventArgs e)
+		{
+			if (GetSuggestionPath(sender) is not { } path)
+				return;
+
+			// Files open their containing folder in the new tab
+			var target = SystemIO.Directory.Exists(path) ? path : SystemIO.Path.GetDirectoryName(path);
+			CloseSearchSuggestions();
+			await NavigationHelpers.OpenPathInNewTab(target, true);
+		}
+
+		private void SearchSuggestionCopyPath_Click(object sender, RoutedEventArgs e)
+		{
+			if (GetSuggestionPath(sender) is not { } path)
+				return;
+
+			// Keeps the suggestions open so several paths can be copied
+			SafetyExtensions.IgnoreExceptions(() =>
+			{
+				var data = new Windows.ApplicationModel.DataTransfer.DataPackage();
+				data.SetText(path);
+				Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(data);
+				Windows.ApplicationModel.DataTransfer.Clipboard.Flush();
+			});
+			Omnibar.FocusWithCaretAtEnd();
+		}
+
 		[DynamicWindowsRuntimeCast(typeof(TextBox))]
 		private void NavigationButtonOverflowFlyoutButton_LosingFocus(UIElement sender, LosingFocusEventArgs args)
 		{

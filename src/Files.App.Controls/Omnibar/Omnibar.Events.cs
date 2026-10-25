@@ -71,11 +71,14 @@ namespace Files.App.Controls
 
 		[DynamicWindowsRuntimeCast(typeof(FlyoutBase))]
 		[DynamicWindowsRuntimeCast(typeof(Popup))]
+		[DynamicWindowsRuntimeCast(typeof(MenuFlyoutPresenter))]
+		[DynamicWindowsRuntimeCast(typeof(MenuFlyoutItemBase))]
 		private void AutoSuggestBox_LostFocus(object sender, RoutedEventArgs e)
 		{
-			// TextBox still has focus if the context menu for selected text is open
+			// TextBox still has focus if the context menu for selected text is open,
+			// or if a context menu was opened on a suggestion (keeps the suggestions open)
 			var element = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(this.XamlRoot);
-			if (element is FlyoutBase or Popup)
+			if (element is FlyoutBase or Popup or MenuFlyoutPresenter or MenuFlyoutItemBase)
 				return;
 
 			GlobalHelper.WriteDebugStringForOmnibar("The TextBox lost the focus.");
