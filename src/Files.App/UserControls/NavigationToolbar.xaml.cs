@@ -577,9 +577,15 @@ namespace Files.App.UserControls
 		private void CloseSearchSuggestions()
 		{
 			if (ViewModel is { } viewModel)
+			{
+				viewModel.CancelSuggestionSearch();
 				viewModel.OmnibarSearchModeText = string.Empty;
+			}
 
+			// Leave search mode so the breadcrumb shows the new location (same as when the Omnibar loses focus)
+			_pendingOmnibarText = null;
 			Omnibar.IsFocused = false;
+			Omnibar.CurrentSelectedMode = OmnibarPathMode;
 			ContentPageContext.ShellPage?.PaneHolder?.FocusActivePane();
 		}
 
