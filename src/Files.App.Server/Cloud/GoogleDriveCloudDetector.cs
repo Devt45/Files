@@ -71,7 +71,7 @@ namespace Files.App.Server.Cloud
 					if (string.IsNullOrWhiteSpace(mount))
 						continue;
 
-					var path = Path.Combine(mount, "My Drive");
+					var path = GetMyDrivePath(mount);
 					yield return new CloudProvider(CloudProviders.GoogleDrive)
 					{
 						Name = media["name"]?.ToString() ?? Path.GetFileName(path),
@@ -88,10 +88,31 @@ namespace Files.App.Server.Cloud
 				yield return new CloudProvider(CloudProviders.GoogleDrive)
 				{
 					Name = "Google Drive",
-					SyncFolder = Path.Combine(registryBasePath, "My Drive"),
+					SyncFolder = GetMyDrivePath(registryBasePath),
 					IconData = iconData,
 				};
 			}
+		}
+
+		// Google Drive names the "My Drive" folder in the user's language (e.g. "Mon Drive" in French).
+		private static readonly string[] _myDriveFolderNames =
+		[
+			"My Drive", "Mon Drive", "Mi unidad", "Meine Ablage", "Il mio Drive", "Meu Drive", "Mijn Drive",
+			"Mój dysk", "Мой диск", "Můj disk", "Min enhet", "Mit drev", "Oma Drive", "Drive saya", "Drive'ım",
+			"Ο Δίσκος μου", "Saját meghajtó", "Contul meu Drive", "Мій диск",
+		];
+
+		private static string GetMyDrivePath(string mount)
+		{
+			foreach (var name in _myDriveFolderNames)
+			{
+				var candidate = Path.Combine(mount, name);
+				if (Directory.Exists(candidate))
+					return candidate;
+			}
+
+			// Unknown language: use the drive root rather than a folder that doesn't exist
+			return Directory.Exists(mount) ? mount : Path.Combine(mount, "My Drive");
 		}
 
 		private static JsonDocument? GetGoogleDriveRegValJson()
