@@ -116,6 +116,25 @@ jobs:
           -p:PublishReadyToRun=true `
           -v:quiet
 
+    # Native launcher used by "Set Files as default file manager" (copied to Assets\FilesOpenDialog by its post-build step)
+    - name: Restore NuGet packages for the launcher
+      shell: pwsh
+      run: |
+        nuget restore "$env:WORKING_DIR\src\Files.App.Launcher\Files.App.Launcher.vcxproj" `
+          -SolutionDirectory "$env:WORKING_DIR"
+
+    - name: Build the launcher
+      shell: pwsh
+      run: |
+        msbuild "$env:WORKING_DIR\src\Files.App.Launcher\Files.App.Launcher.vcxproj" `
+          -t:Build `
+          -p:Platform=x64 `
+          -p:Configuration=Release `
+          -v:quiet
+        if (-not (Test-Path "$env:WORKING_DIR\src\Files.App\Assets\FilesOpenDialog\Files.App.Launcher.exe")) {
+          throw "Files.App.Launcher.exe was not produced"
+        }
+
     - name: Set a unique package version
       shell: pwsh
       run: |
